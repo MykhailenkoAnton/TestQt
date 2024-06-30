@@ -2,4 +2,4 @@
 
 Mykhailenko test Qt:
 
-Don't forget to bundle the database with the executable.
+The database has been temporarily added to the resources for copying to the executable.

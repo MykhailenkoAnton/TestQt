@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(Mykhailenko_Test VERSION 0.1 LANGUAGES CXX)
+set(PROJECT_NAME Mykhailenko_Test)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -45,43 +46,49 @@ set(PROJECT_HEADERS
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(Mykhailenko_Test
+    qt_add_executable(${PROJECT_NAME}
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         ${PROJECT_HEADERS}
     )
 else()
     if(ANDROID)
-        add_library(Mykhailenko_Test SHARED
+        add_library(${PROJECT_NAME} SHARED
             ${PROJECT_SOURCES}
             ${PROJECT_HEADERS}
         )
     else()
-        add_executable(Mykhailenko_Test
+        add_executable(${PROJECT_NAME}
             ${PROJECT_SOURCES}
             ${PROJECT_HEADERS}
         )
     endif()
 endif()
 
-target_link_libraries(Mykhailenko_Test PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(Mykhailenko_Test)
+    qt_finalize_executable(${PROJECT_NAME})
 endif()
 
 set(ICONS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/Icons")
 file(GLOB ICON_FILES "${ICONS_SOURCE_DIR}/*.png")
 
-qt_add_resources(Mykhailenko_Test "icons"
+qt_add_resources(${PROJECT_NAME} "icons"
     PREFIX "/Icons"
     BASE "${ICONS_SOURCE_DIR}"
     FILES ${ICON_FILES}
 )
 
+set(DATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/data")
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${DATA_SOURCE_DIR}/system.db"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/system.db"
+
     COMMAND "${CMAKE_COMMAND}" -E
         env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
             "$<TARGET_FILE:${PROJECT_NAME}>"
-    COMMENT "Running windeployqt..."
+    COMMENT "Copying database to build directory and running windeployqt"
 )
